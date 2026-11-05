@@ -1,0 +1,95 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #101010;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 35px 20px;
+  text-align: center;
+}
+
+header {
+  padding: 35px 10px;
+}
+
+header h1 {
+  color: #d8b45c;
+  font-size: 42px;
+  letter-spacing: 5px;
+  margin-bottom: 5px;
+}
+
+header p {
+  color: white;
+  font-size: 20px;
+  letter-spacing: 8px;
+}
+
+header span {
+  color: #aaa;
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+
+.panel {
+  max-width: 650px;
+  margin: 30px auto;
+  padding: 35px;
+  background: #1c1c1c;
+  border: 1px solid #b89545;
+  border-radius: 15px;
+  box-shadow: 0 0 25px #000;
+}
+
+.panel h2 {
+  color: #d8b45c;
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin: 25px 0 10px;
+  color: #d8b45c;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #b89545;
+  background: #101010;
+  color: white;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  background: linear-gradient(90deg, #a77d2d, #f1d58b);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.evento {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #d8b45c;
+  border-radius: 10px;
+}
+
+footer {
+  margin-top: 60px;
+  color: #888;
+  font-size: 12px;
+}
