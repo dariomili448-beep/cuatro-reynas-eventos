@@ -8,6 +8,9 @@ const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env
 
 function App() {
   const [nombre, setNombre] = useState('')
+  const parametros = new URLSearchParams(window.location.search)
+const modoInvitado = parametros.get('subir') === '1'
+const eventoQR = parametros.get('evento') || ''
   const [evento, setEvento] = useState('')
   const [activo, setActivo] = useState(false)
   const [pendientes, setPendientes] = useState([])
@@ -46,6 +49,12 @@ useEffect(() => {
   }
 
   cargarFotosGuardadas()
+
+const intervalo = setInterval(() => {
+  cargarFotosGuardadas()
+}, 5000)
+
+return () => clearInterval(intervalo)
 }, [activo, evento])
 useEffect(() => {
   cargarGaleriaGeneral()
@@ -106,7 +115,7 @@ async function cargarGaleriaGeneral() {
     const { error: errorBD } = await supabase
       .from('fotos')
       .insert({
-        evento: evento,
+       evento: modoInvitado ? eventoQR : evento,
         nombre_archivo: nombrearchivo,
         estado: 'pendiente'
 })
@@ -138,7 +147,30 @@ async function cargarGaleriaGeneral() {
     if (foto) URL.revokeObjectURL(foto.url)
     setPendientes(prev => prev.filter(f => f.id !== id))
   }
+if (modoInvitado) {
+  return (
+    <main className="app">
+      <header>
+        <h1>CUATRO REYNAS</h1>
+        <p>FOTOS EN DIRECTO</p>
+        <span>EVENTOS & EXPERIENCIAS</span>
+      </header>
 
+      <section className="panel">
+        <h2>¡Compartí tus fotos!</h2>
+        <h3>{eventoQR}</h3>
+        <p>Seleccioná las fotografías de esta fiesta.</p>
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={cargarFotos}
+        />
+      </section>
+    </main>
+  )
+}
   return (
     <main className="app">
       <header>
