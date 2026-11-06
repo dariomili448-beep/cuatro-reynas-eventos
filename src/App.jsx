@@ -1,6 +1,10 @@
-
-import { useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
+import { useState, useEffect } from 'react'
 import './App.css'
+import { QRCodeSVG } from 'qrcode.react'
+
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 function App() {
   const [nombre, setNombre] = useState('')
@@ -8,7 +12,71 @@ function App() {
   const [activo, setActivo] = useState(false)
   const [pendientes, setPendientes] = useState([])
   const [aprobadas, setAprobadas] = useState([])
+  const [todasAprobadas, setTodasAprobadas] = useState([])
+useEffect(() => {
+  if (!activo || !evento) return
 
+  async function cargarFotosGuardadas() {
+    const { data, error } = await supabase
+      .from('fotos')
+      .select('*')
+      .eq('evento', evento)
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    const fotos = await Promise.all(
+      (data || []).map(async foto => {
+        const { data: urlData } = await supabase.storage
+          .from('fotos-eventos')
+          .createSignedUrl(foto.nombre_archivo, 3600)
+
+        return {
+          ...foto,
+          url: urlData?.signedUrl || '',
+          nombre: foto.nombre_archivo
+        }
+      })
+    )
+
+    setPendientes(fotos.filter(f => f.estado === 'pendiente'))
+    setAprobadas(fotos.filter(f => f.estado === 'aprobada'))
+  }
+
+  cargarFotosGuardadas()
+}, [activo, evento])
+useEffect(() => {
+  cargarGaleriaGeneral()
+}, [])
+async function cargarGaleriaGeneral() {
+  const { data, error } = await supabase
+    .from('fotos')
+    .select('*')
+    .eq('estado', 'aprobada')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  const fotos = await Promise.all(
+    (data || []).map(async foto => {
+      const { data: urlData } = await supabase.storage
+        .from('fotos-eventos')
+        .createSignedUrl(foto.nombre_archivo, 3600)
+
+      return {
+        ...foto,
+        url: urlData?.signedUrl || '',
+        nombre: foto.nombre_archivo
+      }
+    })
+  )
+
+  setTodasAprobadas(fotos)
+}
   function crearEvento() {
     if (!nombre.trim()) {
       alert('Escribí el nombre del evento')
@@ -18,19 +86,45 @@ function App() {
     setActivo(true)
   }
 
-  function cargarFotos(e) {
-    const archivos = Array.from(e.target.files || [])
-    const nuevas = archivos
-      .filter(f => f.type.startsWith('image/'))
-      .map(f => ({
-        id: crypto.randomUUID(),
-        url: URL.createObjectURL(f),
-        nombre: f.name
-      }))
+  async function cargarFotos(e) {
+  const archivos = Array.from(e.target.files || [])
 
-    setPendientes(prev => [...prev, ...nuevas])
-    e.target.value = ''
+  for (const archivo of archivos) {
+    if (!archivo.type.startsWith('image/')) continue
+
+  const nombrearchivo = `${crypto.randomUUID()}-${archivo.name}`;
+
+    const { error } = await supabase.storage
+      .from('fotos-eventos')
+      .upload(nombrearchivo, archivo)
+
+    if (error) {
+      alert('Error al subir: ' + error.message)
+      continue
+    }
+
+    const { error: errorBD } = await supabase
+      .from('fotos')
+      .insert({
+        evento: evento,
+        nombre_archivo: nombrearchivo,
+        estado: 'pendiente'
+})
+
+    if (errorBD) {
+      alert('Error al registrar foto: ' + errorBD.message)
+    }
   }
+
+  e.target.value = ''
+  alert('Carga finalizada')
+}
+    
+  
+
+  
+    
+  
 
   function aprobar(id) {
     const foto = pendientes.find(f => f.id === id)
@@ -73,7 +167,14 @@ function App() {
           <>
             <h2>{evento}</h2>
             <p>Evento activo</p>
-
+<div style={{ margin: '20px 0', textAlign: 'center' }}>
+  <h3>ESCANEÁ PARA SUBIR FOTOS</h3>
+  <QRCodeSVG
+ value={window.location.origin + '/?subir=1&evento=' + encodeURIComponent(evento)}
+    size={220}
+  />
+  <p>Compartí este código con tus invitados</p>
+</div>
             <label>Agregar fotografías para probar</label>
             <input
               type="file"
@@ -102,7 +203,21 @@ function App() {
             </div>
 
             <h2>Fotos aprobadas: {aprobadas.length}</h2>
+<h2>GALERÍA GENERAL</h2>
+<p>Los mejores momentos de nuestros eventos</p>
 
+<div style={rejilla}>
+  {todasAprobadas.map(foto => (
+    <div key={foto.id} style={tarjeta}>
+      <img
+        src={foto.url}
+        style={imagen}
+        alt={foto.evento}
+      />
+      <p>{foto.evento}</p>
+    </div>
+  ))}
+</div>
             <div style={rejilla}>
               {aprobadas.map(foto => (
                 <div key={foto.id} style={tarjeta}>
@@ -134,10 +249,10 @@ const tarjeta = {
 }
 
 const imagen = {
-  width: '100%',
-  height: '150px',
-  objectFit: 'cover',
-  borderRadius: '8px'
-}
+  width: "100%",
+  height: "150px",
+  objectFit: "cover",
+  borderRadius: "8px"
+};
 
-export default App
+export default App;
