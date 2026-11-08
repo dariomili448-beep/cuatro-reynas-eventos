@@ -456,7 +456,7 @@ if (modoProyeccion) {
             borderRadius: '10px'
           }}>
            <QRCodeSVG
-  value={'http://192.168.0.102:5173/?subir=1&evento=' + encodeURIComponent(eventoQR || evento || nombre)}
+  value={'https://cuatro-reynas-eventos.vercel.app/?subir=1&evento=' + encodeURIComponent(eventoQR || evento || nombre)}
   size={180}
 />
           </div>
