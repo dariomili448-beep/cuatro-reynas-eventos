@@ -13,6 +13,7 @@ function App() {
   const parametros = new URLSearchParams(window.location.search)
 const modoInvitado = parametros.get('subir') === '1'
 const eventoQR = parametros.get('evento') || ''
+console.log('EVENTO RECIBIDO POR QR:', eventoQR)
 const modoProyeccion = parametros.get('proyectar') === '1'
   const [evento, setEvento] = useState('')
   const [activo, setActivo] = useState(false)
@@ -327,95 +328,166 @@ async function aprobar(id) {
 
   setPendientes(prev => prev.filter(f => f.id !== id))
 }
-  if (modoProyeccion) {
+if (modoProyeccion) {
   const fotoActual = fotosProyeccion[indiceProyeccion]
 
- return (
-  <main style={{
-    position: 'fixed',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    background: 'radial-gradient(ellipse at center, #282012 0%, #090909 60%, #000 100%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    color: '#fff',
-    textAlign: 'center',
-    boxShadow: 'inset 0 0 80px #D4AF3740'
-  }}>
-
-    <div style={{
-      position: 'absolute',
-      top: '3%',
-      color: '#D4AF37',
-      fontSize: 'clamp(18px, 3vw, 32px)',
-      letterSpacing: '5px',
-      fontWeight: 'bold'
+  return (
+    <main style={{
+      position: 'fixed',
+      inset: 0,
+      width: '100%',
+      height: '100%',
+      background: 'radial-gradient(ellipse at center, #282012 0%, #090909 60%, #000 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      color: '#fff',
+      textAlign: 'center',
+      boxShadow: 'inset 0 0 80px #D4AF3740'
     }}>
-      ♛ CUATRO REYNAS EVENTOS ♛
-    </div>
 
-    {fotoActual ? (
-      <>
+      <div style={{
+        position: 'absolute',
+        top: '3%',
+        color: '#D4AF37',
+        fontSize: 'clamp(18px, 3vw, 32px)',
+        letterSpacing: '5px',
+        fontWeight: 'bold'
+      }}>
+        ♛ CUATRO REYNAS EVENTOS ♛
+      </div>
+
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '25px',
+        width: '94%',
+        height: '76%',
+        marginTop: '35px'
+      }}>
+
+        {/* FOTOGRAFIA Y DEDICATORIA */}
+
         <div style={{
-          position: 'relative',
-          zIndex: 1,
-          maxWidth: '92%',
-          maxHeight: '76%',
-          padding: '8px',
-          border: '2px solid #D4AF37',
-          borderRadius: '14px',
-          background: '#080808',
-          boxShadow: '0 0 25px #D4AF3780, 0 0 60px #D4AF3730'
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          <img
-            src={fotoActual.url}
-            alt="Foto del evento"
-            style={{
-              display: 'block',
-              maxWidth: '100%',
-              maxHeight: '70vh',
-              objectFit: 'contain',
-              borderRadius: '7px'
-            }}
-          />
+
+          {fotoActual ? (
+            <>
+              <div style={{
+                maxWidth: '100%',
+                maxHeight: '85%',
+                padding: '8px',
+                border: '2px solid #D4AF37',
+                borderRadius: '14px',
+                background: '#080808',
+                boxShadow: '0 0 25px #D4AF3780, 0 0 60px #D4AF3730'
+              }}>
+                <img
+                  src={fotoActual.url}
+                  alt="Foto del evento"
+                  style={{
+                    display: 'block',
+                    maxWidth: '100%',
+                    maxHeight: '60vh',
+                    objectFit: 'contain',
+                    borderRadius: '7px'
+                  }}
+                />
+              </div>
+
+              {fotoActual.dedicatoria && (
+                <p style={{
+                  color: '#F5D77A',
+                  fontSize: 'clamp(18px, 3vw, 30px)',
+                  padding: '10px 20px',
+                  margin: '12px',
+                  textShadow: '0 0 12px #D4AF3780'
+                }}>
+                  {fotoActual.dedicatoria}
+                </p>
+              )}
+            </>
+          ) : (
+            <h2 style={{ color: '#D4AF37' }}>
+              Esperando fotos aprobadas...
+            </h2>
+          )}
+
         </div>
 
-        {fotoActual.dedicatoria && (
-          <p style={{
-            position: 'relative',
-            zIndex: 1,
-            color: '#F5D77A',
-            fontSize: 'clamp(18px, 3vw, 30px)',
-            padding: '10px 20px',
-            margin: '12px',
-            textShadow: '0 0 12px #D4AF3780'
+        {/* CODIGO QR LATERAL */}
+
+        <div style={{
+          width: 'clamp(140px, 19vw, 230px)',
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px',
+          padding: '12px',
+          border: '2px solid #D4AF37',
+          borderRadius: '16px',
+          background: '#111',
+          boxShadow: '0 0 25px #D4AF3740'
+        }}>
+
+          <div style={{
+            color: '#D4AF37',
+            fontSize: 'clamp(14px, 1.5vw, 20px)',
+            fontWeight: 'bold'
           }}>
-            {fotoActual.dedicatoria}
-          </p>
-        )}
-      </>
-    ) : (
-      <h2 style={{ color: '#D4AF37' }}>
-        Esperando fotos aprobadas...
-      </h2>
-    )}
+            ¡COMPARTÍ!
+          </div>
 
-    <div style={{
-      position: 'absolute',
-      bottom: '3%',
-      color: '#D4AF37',
-      fontSize: 'clamp(12px, 2vw, 20px)',
-      letterSpacing: '4px'
-    }}>
-      LOS MEJORES MOMENTOS DE TU EVENTO
-    </div>
+          <div style={{
+            background: '#fff',
+            padding: '10px',
+            borderRadius: '10px'
+          }}>
+           <QRCodeSVG
+  value={'http://192.168.0.102:5173/?subir=1&evento=' + encodeURIComponent(eventoQR || evento || nombre)}
+  size={180}
+/>
+          </div>
 
-  </main>
-)
+          <div style={{
+            color: '#F5D77A',
+            fontSize: 'clamp(11px, 1.2vw, 16px)',
+            lineHeight: 1.5,
+            fontWeight: 'bold'
+          }}>
+            ESCANEÁ Y ENVIÁ
+            <br />
+            TUS FOTOS Y MENSAJES
+          </div>
+
+        </div>
+
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        bottom: '3%',
+        color: '#D4AF37',
+        fontSize: 'clamp(12px, 2vw, 20px)',
+        letterSpacing: '4px'
+      }}>
+        LOS MEJORES MOMENTOS DE TU EVENTO
+      </div>
+
+    </main>
+  )
 }
 if (modoInvitado) {
   return (
@@ -428,7 +500,14 @@ if (modoInvitado) {
 
       <section className="panel">
         <h2>¡Compartí tus fotos!</h2>
-        <h3>{eventoQR}</h3>
+       <h3 style={{
+  color: '#D4AF37',
+  fontSize: '26px',
+  fontWeight: 'bold',
+  margin: '15px 0'
+}}>
+  EVENTO: {eventoQR}
+</h3>
         <p>Seleccioná las fotografías de esta fiesta.</p>
 <textarea
   value={dedicatoria}
@@ -480,7 +559,7 @@ if (modoInvitado) {
 <div style={{ margin: '20px 0', textAlign: 'center' }}>
   <h3>ESCANEÁ PARA SUBIR FOTOS</h3>
   <QRCodeSVG
-value={'http://192.168.0.102:5173/?subir=1&evento=' + encodeURIComponent(evento)}
+https://cuatro-reynas-eventos.vercel.app/
     size={220}
   />
   <p>Compartí este código con tus invitados</p>
