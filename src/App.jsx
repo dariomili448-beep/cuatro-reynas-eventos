@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 import './App.css'
 import { QRCodeSVG } from 'qrcode.react'
-
+import JSZip from 'jszip'
 
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
@@ -223,6 +223,65 @@ async function cargarGaleriaGeneral() {
   setArchivosInvitado([])
   setDedicatoria('')
   alert('¡Tus fotos y dedicatoria fueron enviadas!')
+}
+async function descargarFotosAprobadas() {
+  if (!evento) {
+    alert('No hay ningún evento activo')
+    return
+  }
+
+  const { data: fotos, error } = await supabase
+    .from('fotos')
+    .select('*')
+    .eq('evento', evento)
+    .eq('estado', 'aprobada')
+
+  if (error) {
+    alert('Error al buscar las fotos: ' + error.message)
+    return
+  }
+
+  if (!fotos || fotos.length === 0) {
+    alert('Todavía no hay fotos aprobadas para descargar')
+    return
+  }
+
+  const zip = new JSZip()
+  const nombreCarpeta = evento.replace(/[\\/:*?"<>|]/g, '_')
+  const carpeta = zip.folder(nombreCarpeta)
+
+  let descargadas = 0
+
+  for (const foto of fotos) {
+    const { data, error } = await supabase.storage
+      .from('fotos-eventos')
+      .download(foto.nombre_archivo)
+
+    if (error) {
+      console.error(error)
+      continue
+    }
+
+    carpeta.file(foto.nombre_archivo.split('/').pop(), data)
+    descargadas++
+  }
+
+  if (descargadas === 0) {
+    alert('No se pudo descargar ninguna fotografía')
+    return
+  }
+
+  const archivoZIP = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(archivoZIP)
+
+  const enlace = document.createElement('a')
+  enlace.href = url
+  enlace.download = nombreCarpeta + '.zip'
+  enlace.click()
+
+  URL.revokeObjectURL(url)
+
+  alert('¡Listo! Se descargaron ' + descargadas + ' fotografías')
 }
 async function aprobar(id) {
   const { data, error } = await supabase
@@ -457,6 +516,23 @@ value={'http://192.168.0.102:5173/?subir=1&evento=' + encodeURIComponent(evento)
             </div>
 
             <h2>Fotos aprobadas: {aprobadas.length}</h2>
+            <button
+  onClick={descargarFotosAprobadas}
+  style={{
+    width: '100%',
+    padding: '15px',
+    margin: '15px 0',
+    background: '#D4AF37',
+    color: '#000',
+    border: 'none',
+    borderRadius: '10px',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    cursor: 'pointer'
+  }}
+>
+  DESCARGAR FOTOS APROBADAS DEL EVENTO
+</button>
 <h2>GALERÍA GENERAL</h2>
 <p>Los mejores momentos de nuestros eventos</p>
 
